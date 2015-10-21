@@ -34,11 +34,12 @@ user = ${site_name}
 group = www-data
 listen = /var/run/php-fpm-${site_name}.sock
 listen.mode = 0666
+# See http://docs.mirocow.com/doku.php?id=system:php-fpm#php_downgrade_РїРѕРЅРёР¶РµРЅРёРµ_РІРµСЂСЃРёРё_php
 pm = dynamic
 pm.max_children = 250
-pm.start_servers = 2
-pm.min_spare_servers = 1
-pm.max_spare_servers = 3
+pm.start_servers = 8
+pm.min_spare_servers = 8
+pm.max_spare_servers = 16
 chdir = /
 security.limit_extensions = false
 php_flag[display_errors] = on
@@ -99,7 +100,7 @@ server {
                 }
 
 
-                #отключаем обработку запросов фреймворком к несуществующим статичным файлам
+                #РѕС‚РєР»СЋС‡Р°РµРј РѕР±СЂР°Р±РѕС‚РєСѓ Р·Р°РїСЂРѕСЃРѕРІ С„СЂРµР№РјРІРѕСЂРєРѕРј Рє РЅРµСЃСѓС‰РµСЃС‚РІСѓСЋС‰РёРј СЃС‚Р°С‚РёС‡РЅС‹Рј С„Р°Р№Р»Р°Рј
                 location ~ \.(js|css|png|jpg|gif|swf|ico|pdf|mov|fla|zip|rar)$ {
                         expires 24h;
                         #log_not_found off;
@@ -107,7 +108,7 @@ server {
                         try_files \$uri \$uri/ /index.php?\$query_string;
                 }
 
-                # Подключаем обработчик
+                # РџРѕРґРєР»СЋС‡Р°РµРј РѕР±СЂР°Р±РѕС‚С‡РёРє
                 location ~ \.php {
                         #try_files $uri =404;
                         include fastcgi_params;
@@ -121,7 +122,7 @@ server {
                         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
                 }
 
-                # Прячем все системные файлы
+                # РџСЂСЏС‡РµРј РІСЃРµ СЃРёСЃС‚РµРјРЅС‹Рµ С„Р°Р№Р»С‹
                 location  ~ /\. {
                         deny  all;
                         access_log off;
@@ -137,4 +138,6 @@ service nginx restart
 echo "Login: ${site_name}"
 echo "Password: ${password}"
 
-echo "Please run site ${site_name} with password"
+echo "Please run \
+  site ${site_name} \
+  with password"
