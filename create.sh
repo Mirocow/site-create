@@ -140,8 +140,10 @@ server {
 service php5-fpm restart
 service nginx restart
 
+echo "Path: /home/${site_name}/"
 echo "Login: ${site_name}"
 echo "Password: ${password}"
+echo "Site root: /home/${site_name}/httpdocs/"
 
 echo "Please run \
   site ${site_name} \
