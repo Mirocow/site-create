@@ -23,7 +23,8 @@ mkdir /home/${site_name}/.ssh
 mkdir /home/${site_name}/httpdocs
 
 useradd -d /home/${site_name} ${site_name}
-usermod -G www-data ${site_name} --password ${password}
+usermod -G www-data ${site_name}
+echo ${password} | passwd ${site_name} --stdin
 
 chown ${site_name}:www-data -R /home/${site_name}
 
