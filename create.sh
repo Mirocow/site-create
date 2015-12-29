@@ -29,6 +29,7 @@ chmod 0700 /home/${site_name}/.ssh
 ssh-keygen -t rsa -N "${site_name}" -f /home/${site_name}/.ssh/id_rsa
 chmod 0600 /home/${site_name}/.ssh/id_rsa
 echo  "<?php phpinfo();" > /home/${site_name}/httpdocs/web/index.php
+php -r 'echo "admin:" . crypt("${authpassword}", "salt") . ": Comment here";' > /home/${site_name}/authfile
 chown ${site_name}:www-data -R /home/${site_name}
 
 echo "## php-fpm config for ${site_name}
@@ -142,8 +143,6 @@ server {
 }
 " > /etc/nginx/conf.d/${site_name}.conf
 
-perl -le 'print "admin:" . crypt("${authpassword}", "salt")' > /home/${site_name}/authfile
-
 service php5-fpm restart
 service nginx restart
 
@@ -159,5 +158,3 @@ echo "Site root: /home/${site_name}/httpdocs/web"
 echo "Web auth password: ${authpassword}"
 echo "-----------------------------------------------"
 echo ""
-
-  
