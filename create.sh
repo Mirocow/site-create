@@ -26,6 +26,10 @@ useradd -d /home/${site_name} ${site_name}
 usermod -G www-data ${site_name}
 echo ${site_name}:${password} | chpasswd
 
+su ${site_name}
+ssh-keygen -t rsa -N "${site_name}" -f ~/.ssh/id_rsa
+exit
+
 chown ${site_name}:www-data -R /home/${site_name}
 
 echo "## php-fpm config for ${site_name}
