@@ -25,12 +25,12 @@ mkdir /home/${site_name}/httpdocs
 useradd -d /home/${site_name} ${site_name}
 usermod -G www-data ${site_name}
 echo ${site_name}:${password} | chpasswd
-
-su ${site_name}
-ssh-keygen -t rsa -N "${site_name}" -f ~/.ssh/id_rsa
-exit
-
+rm -R /home/${site_name}/.ssh
+mkdir /home/${site_name}/.ssh
+chmod 0700 /home/${site_name}/.ssh
+ssh-keygen -t rsa -N "${site_name}" -f /home/${site_name}/.ssh/id_rsa
 chown ${site_name}:www-data -R /home/${site_name}
+chmod 0600 /home/${site_name}/.ssh/id_rsa
 
 echo "## php-fpm config for ${site_name}
 [${site_name}]
@@ -144,7 +144,7 @@ echo "Path: /home/${site_name}/"
 echo "Login: ${site_name}"
 echo "Password: ${password}"
 echo "Site root: /home/${site_name}/httpdocs/"
-
+echo ""
 echo "Please run \
   site ${site_name} \
   with password"
