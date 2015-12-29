@@ -157,7 +157,5 @@ echo "Site root: /home/${site_name}/httpdocs/web"
 echo "Web auth password: ${authpassword}"
 echo "-----------------------------------------------"
 echo ""
-echo "Please run \
-  site ${site_name} \
-  with password"
+
   
