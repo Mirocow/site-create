@@ -99,30 +99,31 @@ server {
                 }
 
                 #
-                location ~ \.(xml)$ {
+                location ~ \.(xml)\$ {
                         expires 24h;
                         charset windows-1251;
                         #log_not_found off;
                         #try_files $uri =404;
-                        #try_files $uri $uri/ /index.php?$query_string;
+                        #try_files \$uri \$uri/ /index.php?\$query_string;
                 }
 
 
                 #отключаем обработку запросов фреймворком к несуществующим статичным файлам
-                location ~ \.(js|css|png|jpg|gif|swf|ico|pdf|mov|fla|zip|rar)$ {
+                location ~ \.(js|css|png|jpg|gif|swf|ico|pdf|mov|fla|zip|rar)\$ {
                         expires 24h;
                         #log_not_found off;
-                        #try_files $uri =404;
+                        #try_files \$uri =404;
                         try_files \$uri \$uri/ /index.php?\$query_string;
                 }
 
                 # Подключаем обработчик
                 location ~ \.php {
-                        #try_files $uri =404;
+                        #try_files \$uri =404;
                         include fastcgi_params;
 
                         # Use your own port of fastcgi here
                         #fastcgi_pass 127.0.0.1:9000;
+						
                         fastcgi_pass unix:/var/run/php-fpm-${site_name}.sock;
                         fastcgi_index index.php;
                         fastcgi_split_path_info ^(.+\.php)(/.+)$;
