@@ -24,7 +24,7 @@ mkdir /home/${site_name}/httpdocs
 
 useradd -d /home/${site_name} ${site_name}
 usermod -G www-data ${site_name}
-echo ${password} | passwd ${site_name} --stdin
+echo ${site_name}:${password} | chpasswd
 
 chown ${site_name}:www-data -R /home/${site_name}
 
