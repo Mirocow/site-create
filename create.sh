@@ -149,10 +149,12 @@ service nginx restart
 
 echo ""
 echo "-----------------------------------------------"
-echo "Path: /home/${site_name}/"
+echo "User:"
 echo "Login: ${site_name}"
 echo "Password: ${password}"
 echo "SSH File: /home/${site_name}/.ssh/id_rsa.pub"
+echo "Server:"
+echo "Path: /home/${site_name}/"
 echo "Site root: /home/${site_name}/httpdocs/web"
 echo "Web auth password: ${authpassword}"
 echo "-----------------------------------------------"
