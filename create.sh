@@ -147,11 +147,15 @@ perl -le 'print "admin:" . crypt("${authpassword}", "salt")' > /home/${site_name
 service php5-fpm restart
 service nginx restart
 
+echo ""
+echo "-----------------------------------------------"
 echo "Path: /home/${site_name}/"
 echo "Login: ${site_name}"
 echo "Password: ${password}"
+echo "SSH File: /home/${site_name}/.ssh/id_rsa.pub"
 echo "Site root: /home/${site_name}/httpdocs/web"
 echo "Web auth password: ${authpassword}"
+echo "-----------------------------------------------"
 echo ""
 echo "Please run \
   site ${site_name} \
