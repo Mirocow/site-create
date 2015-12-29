@@ -28,7 +28,7 @@ mkdir /home/${site_name}/.ssh
 chmod 0700 /home/${site_name}/.ssh
 ssh-keygen -t rsa -N "${site_name}" -f /home/${site_name}/.ssh/id_rsa
 chmod 0600 /home/${site_name}/.ssh/id_rsa
-echo  "<?php print 'It\`s work on ${site_name} PHP v' . phpversion(); phpinfo();" > /home/${site_name}/httpdocs/web/index.php
+echo  "<?php phpinfo();" > /home/${site_name}/httpdocs/web/index.php
 chown ${site_name}:www-data -R /home/${site_name}
 
 echo "## php-fpm config for ${site_name}
