@@ -54,7 +54,7 @@ echo "
 server {
                 listen ${site_addr};
                 server_name ${site_name} www.${site_name};
-                return 301 http://www.${site_name}$request_uri;
+                return 301 http://www.${site_name}\$request_uri;
 }
 
 server {
