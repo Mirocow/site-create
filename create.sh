@@ -2,26 +2,23 @@
 
 site_name=$1
 
-if [$2]; then
+if [ ! $2 == '' ]; then
   site_addr="$2:80"
 else
   site_addr="80"
 fi
 
+authpassword=$(date +%s | sha256sum | base64 | head -c 16 ; echo)
 password=$(date +%s | sha256sum | base64 | head -c 16 ; echo)
 
 service php5-fpm stop
 service nginx stop
 
 deluser ${site_name}
-
 rm -r /home/${site_name}
 mkdir /home/${site_name}
-#rmdir /home/${site_name}/.ssh
-mkdir /home/${site_name}/.ssh
-#rmdir /home/${site_name}/httpdocs
 mkdir /home/${site_name}/httpdocs
-
+mkdir /home/${site_name}/httpdocs/web
 useradd -d /home/${site_name} ${site_name}
 usermod -G www-data ${site_name}
 echo ${site_name}:${password} | chpasswd
@@ -29,8 +26,9 @@ rm -R /home/${site_name}/.ssh
 mkdir /home/${site_name}/.ssh
 chmod 0700 /home/${site_name}/.ssh
 ssh-keygen -t rsa -N "${site_name}" -f /home/${site_name}/.ssh/id_rsa
-chown ${site_name}:www-data -R /home/${site_name}
 chmod 0600 /home/${site_name}/.ssh/id_rsa
+echo  "<?php print 'It\`s work on ${site_name} PHP v' . phpversion(); echo '<pre>'; print_r(get_loaded_extensions()); echo '</pre>';" > /home/${site_name}/httpdocs/web/index.php
+chown ${site_name}:www-data -R /home/${site_name}
 
 echo "## php-fpm config for ${site_name}
 [${site_name}]
@@ -52,15 +50,18 @@ php_admin_value[error_log] = /var/log/nginx/fpm-php.${site_name}.log
 php_admin_flag[log_errors] = on
 " > /etc/php5/fpm/pool.d/${site_name}.conf
 
-
-echo  "<?php print 'It\`s work on ${site_name} PHP v' . phpversion(); echo '<pre>'; print_r(get_loaded_extensions()); echo '</pre>';" > /home/${site_name}/httpdocs/index.php
-
 echo "
+server {
+                listen ${site_addr};
+                server_name ${site_name} www.${site_name};
+                return 301 http://www.${site_name}$request_uri;
+}
+
 server {
 
                 listen ${site_addr};
-                server_name ${site_name};
-                root /home/${site_name}/httpdocs;
+                server_name www.${site_name};
+                root /home/${site_name}/httpdocs/web;
                 index index.php;
 
                 access_log /var/log/nginx/${site_name}.access.log;
@@ -85,6 +86,8 @@ server {
 
                 location / {
                         index index.php;
+                        #auth_basic \"Website development\"; 
+                        #auth_basic_user_file /home/${site_name}/authfile;
                         try_files \$uri \$uri/ /index.php?\$query_string;
                 }
 
@@ -137,13 +140,16 @@ server {
 }
 " > /etc/nginx/conf.d/${site_name}.conf
 
+perl -le 'print "admin:" . crypt("${authpassword}", "salt")' > /home/${site_name}/authfile
+
 service php5-fpm restart
 service nginx restart
 
 echo "Path: /home/${site_name}/"
 echo "Login: ${site_name}"
 echo "Password: ${password}"
-echo "Site root: /home/${site_name}/httpdocs/"
+echo "Site root: /home/${site_name}/httpdocs/web"
+echo "Web auth password: ${authpassword}"
 echo ""
 echo "Please run \
   site ${site_name} \
