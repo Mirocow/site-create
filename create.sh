@@ -18,18 +18,18 @@ service nginx stop
 deluser ${site_name}
 rm -r /home/${site_name}
 mkdir /home/${site_name}
+mkdir /home/${site_name}/logs
 mkdir /home/${site_name}/httpdocs
 mkdir /home/${site_name}/httpdocs/web
 useradd -d /home/${site_name} ${site_name}
 usermod -G www-data ${site_name}
 echo ${site_name}:${password} | chpasswd
-rm -R /home/${site_name}/.ssh
 mkdir /home/${site_name}/.ssh
 chmod 0700 /home/${site_name}/.ssh
 ssh-keygen -t rsa -N "${site_name}" -f /home/${site_name}/.ssh/id_rsa
 chmod 0600 /home/${site_name}/.ssh/id_rsa
 echo  "<?php phpinfo();" > /home/${site_name}/httpdocs/web/index.php
-php -r 'echo "admin:" . crypt("${authpassword}", "salt") . ": Comment here";' > /home/${site_name}/authfile
+php -r 'echo "admin:" . crypt("${authpassword}", "salt") . ": Web auth for ${site_name}";' > /home/${site_name}/authfile
 chown ${site_name}:www-data -R /home/${site_name}
 
 echo "## php-fpm config for ${site_name}
@@ -37,18 +37,20 @@ echo "## php-fpm config for ${site_name}
 
 user = ${site_name}
 group = www-data
+
 listen = /var/run/php-fpm-${site_name}.sock
 listen.mode = 0666
-# See http://docs.mirocow.com/doku.php?id=system:php-fpm#php_downgrade_понижение_версии_php
+
 pm = dynamic
 pm.max_children = 250
 pm.start_servers = 8
 pm.min_spare_servers = 8
 pm.max_spare_servers = 16
+
 chdir = /
 security.limit_extensions = false
 php_flag[display_errors] = on
-php_admin_value[error_log] = /var/log/nginx/fpm-php.${site_name}.log
+php_admin_value[error_log] = /home/${site_name}/logs/fpm-php.${site_name}.log
 php_admin_flag[log_errors] = on
 " > /etc/php5/fpm/pool.d/${site_name}.conf
 
@@ -66,8 +68,8 @@ server {
                 root /home/${site_name}/httpdocs/web;
                 index index.php;
 
-                access_log /var/log/nginx/${site_name}.access.log;
-                error_log  /var/log/nginx/${site_name}.error.log error;
+                access_log /home/${site_name}/logs/access.log;
+                error_log  /home/${site_name}/logs/error.log error;
 
                 charset utf-8;
                 #charset        windows-1251;
@@ -147,14 +149,16 @@ service php5-fpm restart
 service nginx restart
 
 echo ""
-echo "-----------------------------------------------"
+echo "--------------------------------------------------------"
 echo "User:"
 echo "Login: ${site_name}"
 echo "Password: ${password}"
 echo "Path: /home/${site_name}/"
-echo "SSH File: /home/${site_name}/.ssh/id_rsa.pub"
+echo "SSH Private file: /home/${site_name}/.ssh/id_rsa"
+echo "SSH Public file: /home/${site_name}/.ssh/id_rsa.pub"
 echo "Server:"
 echo "Site root: /home/${site_name}/httpdocs/web"
-echo "Web auth password: ${authpassword}"
-echo "-----------------------------------------------"
+echo "Site logs path: /home/${site_name}/logs"
+echo "Web auth: admin ${authpassword}"
+echo "--------------------------------------------------------"
 echo ""
