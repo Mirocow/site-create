@@ -134,6 +134,16 @@ server {
                         fastcgi_param PATH_INFO \$fastcgi_path_info;
                         fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
                 }
+                
+                # Perl fastcgi
+		location ~ \.pl$ {
+			try_files $uri =404;
+			gzip off;
+			fastcgi_pass  127.0.0.1:8999;
+			fastcgi_index index.pl;
+			fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+			include fastcgi_params;
+		}                
 
                 # Прячем все системные файлы
                 location  ~ /\. {
