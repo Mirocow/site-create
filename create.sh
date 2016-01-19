@@ -57,6 +57,33 @@ php_admin_flag[log_errors] = on
 echo "
 server {
                 listen ${site_addr};
+                server_name  awstats.${site_name};
+                
+                auth_basic            \"Restricted\";
+                auth_basic_user_file  /home/${site_name}/authfile;
+
+                access_log /var/log/nginx/access.awstats.${site_name}.log;
+                error_log /var/log/nginx/error.awstats.${site_name}.log;                
+
+                location / {
+                        root   /home/${site_name}/awstats/;
+                        index  awstats.html;
+                }
+
+                location  /awstats-icon/ {
+                        alias  /usr/share/awstats/icon/;
+                }
+                
+                location ~ ^/cgi-bin {
+                        fastcgi_pass   unix:/var/run/fcgiwrap.socket;
+                        include /etc/nginx/fastcgi_params;
+                        fastcgi_param  SCRIPT_FILENAME  /usr/lib$fastcgi_script_name;
+                }
+
+}
+
+server {
+                listen ${site_addr};
                 server_name ${site_name};
                 return 301 http://www.${site_name}\$request_uri;
 }
@@ -173,5 +200,7 @@ echo "Server:"
 echo "Site root: /home/${site_name}/httpdocs/web"
 echo "Site logs path: /home/${site_name}/logs"
 echo "Web auth: admin ${authpassword}"
+echo "Statistic:"
+echo "awstats.${site_name}"
 echo "--------------------------------------------------------"
 echo ""
