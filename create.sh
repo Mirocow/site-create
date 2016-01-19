@@ -137,12 +137,13 @@ server {
                 
                 # Perl fastcgi
 		location ~ \.pl$ {
-			try_files $uri =404;
 			gzip off;
-			fastcgi_pass  127.0.0.1:8999;
-			fastcgi_index index.pl;
-			fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
-			include fastcgi_params;
+			try_files $uri =404;
+			root /var/www/;
+			fastcgi_pass unix:/var/run/fcgiwrap.socket;
+			include /etc/nginx/fastcgi_params;
+			fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+			fastcgi_ignore_client_abort off;
 		}                
 
                 # Прячем все системные файлы
