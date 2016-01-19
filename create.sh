@@ -68,6 +68,7 @@ server {
                 location / {
                         root   /home/${site_name}/awstats/;
                         index  awstats.html;
+                        access_log off;
                 }
 
                 location  /awstats-icon/ {
