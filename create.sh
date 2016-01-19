@@ -72,9 +72,11 @@ server {
 
                 location  /awstats-icon/ {
                         alias  /usr/share/awstats/icon/;
+                        access_log off;
                 }
                 
                 location ~ ^/cgi-bin {
+                        access_log off;
                         fastcgi_pass   unix:/var/run/fcgiwrap.socket;
                         include /etc/nginx/fastcgi_params;
                         fastcgi_param  SCRIPT_FILENAME  /usr/lib$fastcgi_script_name;
@@ -202,5 +204,6 @@ echo "Site logs path: /home/${site_name}/logs"
 echo "Web auth: admin ${authpassword}"
 echo "Statistic:"
 echo "awstats.${site_name}"
+echo "Add crontab task: */20 * * * * /usr/lib/cgi-bin/awstats.pl -config=${site_name} -update > /dev/null"
 echo "--------------------------------------------------------"
 echo ""
