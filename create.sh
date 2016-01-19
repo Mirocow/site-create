@@ -76,6 +76,7 @@ server {
                         access_log off;
                 }
                 
+                # apt-get install 
                 location ~ ^/cgi-bin {
                         access_log off;
                         fastcgi_pass   unix:/var/run/fcgiwrap.socket;
