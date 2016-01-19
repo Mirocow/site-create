@@ -139,17 +139,17 @@ server {
 
 		# PHP fastcgi
 		location ~ \.php {
-				#try_files \$uri =404;
-				include fastcgi_params;
+			#try_files \$uri =404;
+			include fastcgi_params;
 
-				# Use your own port of fastcgi here
-				#fastcgi_pass 127.0.0.1:9000;
-				
-				fastcgi_pass unix:/var/run/php-fpm-${site_name}.sock;
-				fastcgi_index index.php;
-				fastcgi_split_path_info ^(.+\.php)(/.+)$;
-				fastcgi_param PATH_INFO \$fastcgi_path_info;
-				fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+			# Use your own port of fastcgi here
+			#fastcgi_pass 127.0.0.1:9000;
+			
+			fastcgi_pass unix:/var/run/php-fpm-${site_name}.sock;
+			fastcgi_index index.php;
+			fastcgi_split_path_info ^(.+\.php)(/.+)$;
+			fastcgi_param PATH_INFO \$fastcgi_path_info;
+			fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
 		}
 				
 		# Perl fastcgi
