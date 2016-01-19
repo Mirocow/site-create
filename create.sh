@@ -62,46 +62,35 @@ server {
 }
 
 server {
-
                 listen ${site_addr};
                 server_name www.${site_name};
                 root /home/${site_name}/httpdocs/web;
                 index index.php;
-
                 access_log /home/${site_name}/logs/access.log;
                 error_log  /home/${site_name}/logs/error.log error;
-
                 charset utf-8;
                 #charset        windows-1251;
-
-
                 location = /favicon.ico {
                         log_not_found off;
                         access_log off;
                         break;
                 }
-
                 location = /robots.txt {
                         allow all;
                         log_not_found off;
                         access_log off;
                 }
-
-
                 location / {
                         index index.php;
                         #auth_basic \"Website development\"; 
                         #auth_basic_user_file /home/${site_name}/authfile;
                         try_files \$uri \$uri/ /index.php?\$query_string;
                 }
-
-
                 location ~ /(protected|themes/\w+/views)/ {
                         access_log off;
                         log_not_found off;
                         return 404;
                 }
-
                 #
                 location ~ \.(xml)\$ {
                         expires 24h;
@@ -110,9 +99,7 @@ server {
                         #try_files $uri =404;
                         #try_files \$uri \$uri/ /index.php?\$query_string;
                 }
-
-
-                #отключаем обработку запросов фреймворком к несуществующим статичным файлам
+                # 
                 location ~ \.(js|css|png|jpg|gif|swf|ico|pdf|mov|fla|zip|rar)\$ {
                         expires 24h;
                         #log_not_found off;
@@ -121,55 +108,53 @@ server {
                 }
                 
                 # Awstats
-		location /awstats/ {
-			root   /usr/lib/cgi-bin;
-			index  index.html index.htm index.pl;
-			auth_basic \"Website development\"; 
-			auth_basic_user_file /home/${site_name}/authfile;			
-		}
-		location /awstatsclasses/ {
-			alias /usr/share/awstats/lib/;
-		}
-		location /awstats-icon/ {
-			alias /usr/share/awstats/icon/;
-		}
-		location /awstatscss {
-			alias /usr/share/doc/awstats/examples/css/;
-		}                
-
-		# PHP fastcgi
-		location ~ \.php {
-			#try_files \$uri =404;
-			include fastcgi_params;
-
-			# Use your own port of fastcgi here
-			#fastcgi_pass 127.0.0.1:9000;
-			
-			fastcgi_pass unix:/var/run/php-fpm-${site_name}.sock;
-			fastcgi_index index.php;
-			fastcgi_split_path_info ^(.+\.php)(/.+)$;
-			fastcgi_param PATH_INFO \$fastcgi_path_info;
-			fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-		}
-				
-		# Perl fastcgi
-		location ~ \.pl$ {
-			gzip off;
-			try_files $uri =404;
-			root /var/www/;
-			fastcgi_pass unix:/var/run/fcgiwrap.socket;
-			include /etc/nginx/fastcgi_params;
-			fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-			fastcgi_ignore_client_abort off;
-		}                
-
-		# Прячем все системные файлы
-		location  ~ /\. {
-				deny  all;
-				access_log off;
-				log_not_found off;
-		}
-
+                location /awstats/ {
+                        root   /usr/lib/cgi-bin;
+                        index  index.html index.htm index.pl;
+                        auth_basic \"Website development\"; 
+                        auth_basic_user_file /home/${site_name}/authfile;
+                }
+                location /awstatsclasses/ {
+                        alias /usr/share/awstats/lib/;
+                }
+                location /awstats-icon/ {
+                        alias /usr/share/awstats/icon/;
+                }
+                location /awstatscss {
+                        alias /usr/share/doc/awstats/examples/css/;
+                }
+                
+                # PHP fastcgi
+                location ~ \.php {
+                        #try_files \$uri =404;
+                        include fastcgi_params;
+                        # Use your own port of fastcgi here
+                        #fastcgi_pass 127.0.0.1:9000;
+                        
+                        fastcgi_pass unix:/var/run/php-fpm-${site_name}.sock;
+                        fastcgi_index index.php;
+                        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+                        fastcgi_param PATH_INFO \$fastcgi_path_info;
+                        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+                }
+                
+                # Perl fastcgi
+                location ~ \.pl$ {
+                        gzip off;
+                        try_files $uri =404;
+                        root /var/www/;
+                        fastcgi_pass unix:/var/run/fcgiwrap.socket;
+                        include /etc/nginx/fastcgi_params;
+                        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                        fastcgi_ignore_client_abort off;
+                }                
+                
+                # Hide all system files
+                location  ~ /\. {
+                        deny  all;
+                        access_log off;
+                        log_not_found off;
+                }
 }
 " > /etc/nginx/conf.d/${site_name}.conf
 
