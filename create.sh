@@ -127,7 +127,7 @@ server {
                         expires 24h;
                         charset windows-1251;
                         #log_not_found off;
-                        #try_files $uri =404;
+                        #try_files \$uri =404;
                         #try_files \$uri \$uri/ /index.php?\$query_string;
                 }
                 # 
@@ -172,11 +172,11 @@ server {
                 # Perl fastcgi
                 location ~ \.pl$ {
                         gzip off;
-                        try_files $uri =404;
+                        try_files \$uri =404;
                         root /var/www/;
                         fastcgi_pass unix:/var/run/fcgiwrap.socket;
                         include /etc/nginx/fastcgi_params;
-                        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
                         fastcgi_ignore_client_abort off;
                 }                
                 
