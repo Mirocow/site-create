@@ -81,7 +81,7 @@ server {
                         access_log off;
                         fastcgi_pass   unix:/var/run/fcgiwrap.socket;
                         include /etc/nginx/fastcgi_params;
-                        fastcgi_param  SCRIPT_FILENAME  /usr/lib$fastcgi_script_name;
+                        fastcgi_param  SCRIPT_FILENAME  /usr/lib\$fastcgi_script_name;
                 }
 
 }
