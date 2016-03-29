@@ -5,7 +5,7 @@ if [ ! -n "$BASH" ] ;then echo Please run this script $0 with bash; exit 1; fi
 function create_site()
 {
 
-    site_name=$HOST
+  site_name=$HOST
 	site_addr=$IP
 
 	authpassword=$(date +%s | sha256sum | base64 | head -c 6 ; echo)
@@ -281,7 +281,6 @@ if [ $# = 0 ]; then
 fi
 
 HOST=''
-IP='80'
 APACHE=0
 
 for i in "$@"
@@ -293,13 +292,12 @@ do
 	;;
 	-i=* | --ip=*)
 	    IP=( "${i#*=}" )
-		$IP="${IP}:80"
 	    shift
-	;;	
+	;;
 	-a | --apache)
 	    APACHE=1
 	    shift
-	;;       
+	;;
 	-h | --help)
 		usage
 		exit
@@ -310,5 +308,13 @@ do
     esac
 done
 
+if [ -z "$IP" ]; then
+	IP='80'
+fi
+
 # === AUTORUN ===
-create_site
+if [ ! -z "$HOST" ]; then
+  create_site
+else
+	usage
+fi
