@@ -28,7 +28,7 @@ function create_site()
 	ssh-keygen -t dsa -N "${site_name}" -f /home/${site_name}/.ssh/id_dsa	
 	chmod 0600 /home/${site_name}/.ssh/id_dsa
 	echo  "<?php phpinfo();" > /home/${site_name}/httpdocs/web/index.php
-	php -r 'echo "admin:" . crypt("${authpassword}", "salt") . ": Web auth for ${site_name}";' > /home/${site_name}/authfile
+	php -r "echo 'admin:' . crypt('${authpassword}', 'salt') . ': Web auth for ${site_name}';" > /home/${site_name}/authfile
 	chown ${site_name}:www-data -R /home/${site_name}
 
 	#service php5-fpm stop
