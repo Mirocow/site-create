@@ -108,6 +108,7 @@ security.limit_extensions = false
 php_flag[display_errors] = on
 php_admin_value[error_log] = /home/${site_name}/logs/fpm-php.${site_name}.log
 php_admin_flag[log_errors] = on
+php_flag[opcache.enable] = off
 " > /etc/php5/fpm/pool.d/${site_name}.conf
 		
 main="
