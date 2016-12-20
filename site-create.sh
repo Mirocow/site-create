@@ -28,13 +28,15 @@ function create_site()
 	ssh-keygen -t dsa -N "${site_name}" -f /home/${site_name}/.ssh/id_dsa	
 	chmod 0600 /home/${site_name}/.ssh/id_dsa
 	echo  "<?php phpinfo();" > /home/${site_name}/httpdocs/web/index.php
-	php -r "echo 'admin:' . crypt('${authpassword}', 'salt') . ': Web auth for ${site_name}';" > /home/${site_name}/authfile
+	
+	if [ $LOCK -eq 1 ]; then
+	  php -r "echo 'admin:' . crypt('${authpassword}', 'salt') . ': Web auth for ${site_name}';" > /home/${site_name}/authfile	  
+	fi
+	
 	chown ${site_name}:www-data -R /home/${site_name}
 
-	#service php5-fpm stop
-	#service apache2 stop
-
 	if [ $APACHE -eq 1 ]; then
+	
 echo "
 <VirtualHost 127.0.0.1:8080>
 		ServerName ${site_name}
@@ -86,8 +88,10 @@ main="
 						proxy_set_header        X-Real-IP       \$remote_addr;
 						proxy_set_header        X-Forwarded-For \$proxy_add_x_forwarded_for;
 				}
-"		
+"	
+	
 	else
+	
 echo "## php-fpm config for ${site_name}
 [${site_name}]
 
@@ -110,13 +114,20 @@ php_admin_value[error_log] = /home/${site_name}/logs/fpm-php.${site_name}.log
 php_admin_flag[log_errors] = on
 php_flag[opcache.enable] = off
 " > /etc/php5/fpm/pool.d/${site_name}.conf
+
+if [ $LOCK -eq 1 ]; then
+lock="
+auth_basic \"Website development\"; 
+auth_basic_user_file /home/${site_name}/authfile;
+"
+else
+lock=''
+fi
 		
 main="
 				# With PHP-FPM
 				location / {
 						index index.php;
-						#auth_basic \"Website development\"; 
-						#auth_basic_user_file /home/${site_name}/authfile;
 						try_files \$uri \$uri/ /index.php?\$query_string;
 				}
 				
@@ -126,7 +137,7 @@ main="
 						include fastcgi_params;
 						# Use your own port of fastcgi here
 						#fastcgi_pass 127.0.0.1:9000;
-						
+						${lock}
 						fastcgi_pass unix:/var/run/php-fpm-${site_name}.sock;
 						fastcgi_index index.php;
 						fastcgi_split_path_info ^(.+\.php)(/.+)$;
@@ -136,6 +147,7 @@ main="
 "
 	fi
 
+if [ $AWSTATS -eq 1 ]; then	
 awstats="# Awstats
 server {
 				listen ${site_addr};
@@ -158,7 +170,7 @@ server {
 						access_log off;
 				}
 				
-				# apt-get install 
+				# apt-get awstats install 
 				location ~ ^/cgi-bin {
 						access_log off;
 						fastcgi_pass   unix:/var/run/fcgiwrap.socket;
@@ -167,6 +179,9 @@ server {
 				}
 }
 "
+else
+awstats=''
+fi
 
 echo "
 ${awstats}
@@ -229,31 +244,43 @@ server {
 }
 " > /etc/nginx/conf.d/${site_name}.conf
 
-	service php5-fpm reload
+	if [ $PHP -eq 5 ]; then
+		service php5-fpm reload
+	else
+		service php7.0-fpm reload
+	fi	
+	
 	service apache2 reload
 	service nginx reload
 	
 	echo ""
 	echo "--------------------------------------------------------"
-	echo "User:"
+	echo "User: ${site_name}"
 	echo "Login: ${site_name}"
 	echo "Password: ${password}"
 	echo "Path: /home/${site_name}/"
 	echo "SSH Private file: /home/${site_name}/.ssh/id_rsa"
 	echo "SSH Public file: /home/${site_name}/.ssh/id_rsa.pub"
-	echo "Server:"
+	echo "Servers:"
 	echo "Site root: /home/${site_name}/httpdocs/web"
-	echo "Site logs path: /home/${site_name}/logs"
+	echo "Site logs path: /home/${site_name}/logs"	
 	if [ $APACHE -eq 1 ]; then
 		echo "Back-end server: Apache 2"
-		echo "/etc/apache2/sites-enabled/${site_name}.conf"
+		echo "NGINX: /etc/nginx/conf.d/${site_name}.conf"
+		echo "APACHE: /etc/apache2/sites-enabled/${site_name}.conf"
 	else
 		echo "Back-end server: PHP-FPM"
-	fi
-	echo "Web auth: admin ${authpassword}"
-	echo "Statistic:"
-	echo "awstats.${site_name}"
-	echo "Add crontab task: */20 * * * * /usr/lib/cgi-bin/awstats.pl -config=${site_name} -update > /dev/null"
+		echo "NGINX: /etc/nginx/conf.d/${site_name}.conf"
+		echo "PHP-FPM: /etc/php5/fpm/pool.d/${site_name}.conf"
+	fi	
+	if [ $LOCK -eq 1 ]; then
+		echo "Web auth: admin ${authpassword}"
+	fi	
+	if [ $AWSTATS -eq 1 ]; then
+		echo "Statistic:"
+		echo "awstats.${site_name}"
+		echo "Add crontab task: */20 * * * * /usr/lib/cgi-bin/awstats.pl -config=${site_name} -update > /dev/null"
+	fi	
 	echo "--------------------------------------------------------"
 	echo ""
 
@@ -267,11 +294,16 @@ usage: $0 options
 This script create settings files for nginx, php-fpm, apache2.
 
 OPTIONS:
-   -n | --host      Host name
-   -i | --ip        IP address, default usage 80
+   -n | --host      Host name (Example: --host=myhost.com)
+   -i | --ip        IP address, default usage 80 (Example: --ip=127.0.0.1:8080)
    -a | --apache    Usage apache back-end
+   -s | --awstats   Usage awstats
+   -5 | --php5      Usage PHP 5.x
+   -7 | --php7      Usage PHP 7.x
    -h | --help      Usage
 
+EXAMPLES:	 
+   bash site-create.sh --host="yii2-eav.ztc" --ip="192.168.1.131:8082"
 
 EOF
 }
@@ -281,8 +313,12 @@ if [ $# = 0 ]; then
     exit
 fi
 
+LOCK=0
 HOST=''
 APACHE=0
+AWSTATS=0
+PHP=5
+IP=$(hostname -I)
 
 for i in "$@"
 do
@@ -299,6 +335,22 @@ do
 	    APACHE=1
 	    shift
 	;;
+	-s | --awstats)
+	    AWSTATS=1
+	    shift
+	;;
+	-l | --lock)
+	    LOCK=1
+	    shift
+	;;	
+	-5 | --php5)
+	    PHP=5
+	    shift
+	;;
+	-7 | --php7)
+	    PHP=7
+	    shift
+	;;	
 	-h | --help)
 		usage
 		exit
@@ -308,10 +360,6 @@ do
 	;;
     esac
 done
-
-if [ -z "$IP" ]; then
-	IP='80'
-fi
 
 # === AUTORUN ===
 if [ ! -z "$HOST" ]; then
