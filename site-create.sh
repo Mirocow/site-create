@@ -291,8 +291,9 @@ server {
           if [ $PHP -eq 5 ]; then
             echo "PHP-FPM: /etc/php5/fpm/pool.d/${site_name}.conf"
           else
-            echo "PHP-FPM: /etc/php/7.0/fpm/pool.d/${site_name}.conf"
+            echo "PHP-FPM: /etc/php/7.0/fpm/pool.d/${site_name}.conf"						
           fi
+					echo "unixsock: /var/run/php-fpm-${PHP}-${site_name}.sock"
         fi
         if [ $LOCK -eq 1 ]; then
           echo "Web auth: admin ${authpassword}"
