@@ -30,7 +30,7 @@ PHP-FPM: /etc/php/7.0/fpm/pool.d/yii2-eav.ztc.conf
 ### Для подключения PHP 5.x
 
 ``` sh
-$ bash site-create.sh --host="yii2-eav.ztc" -7
+$ bash site-create.sh --host="yii2-eav.ztc" -5
 ```
 
 ### Вывод
