@@ -17,28 +17,29 @@ function create_site()
         sleep 1
         password=$(date +%s | sha256sum | base64 | head -c 16 ; echo)
 
-        deluser ${site_name}
-        rm -r /home/${site_name}
-        mkdir /home/${site_name}
-        mkdir /home/${site_name}/logs
-        mkdir /home/${site_name}/httpdocs
-        mkdir /home/${site_name}/httpdocs/web
-        useradd -d /home/${site_name} ${site_name}
-        usermod -G www-data ${site_name}
-        echo ${site_name}:${password} | chpasswd
-        mkdir /home/${site_name}/.ssh
-        chmod 0700 /home/${site_name}/.ssh
-        ssh-keygen -t rsa -N "${site_name}" -f /home/${site_name}/.ssh/id_rsa
-        chmod 0600 /home/${site_name}/.ssh/id_rsa
-        ssh-keygen -t dsa -N "${site_name}" -f /home/${site_name}/.ssh/id_dsa
-        chmod 0600 /home/${site_name}/.ssh/id_dsa
-        echo  "<?php phpinfo();" > /home/${site_name}/httpdocs/web/index.php
-
-        if [ $LOCK -eq 1 ]; then
-          php -r "echo 'admin:' . crypt('${authpassword}', 'salt') . ': Web auth for ${site_name}';" > /home/${site_name}/authfile
-        fi
-
-        chown ${site_name}:www-data -R /home/${site_name}
+				if [ -d /home/${site_name} ]; then
+					echo ${site_name}:${password} | chpasswd
+          usermod  -s /bin/bash ${site_name}					
+				else
+					mkdir /home/${site_name}
+					mkdir /home/${site_name}/logs
+					mkdir /home/${site_name}/httpdocs
+					mkdir /home/${site_name}/httpdocs/web
+					useradd -d /home/${site_name} -s /bin/bash ${site_name}
+					usermod -G www-data ${site_name}
+					echo ${site_name}:${password} | chpasswd
+					mkdir /home/${site_name}/.ssh
+					chmod 0700 /home/${site_name}/.ssh
+					ssh-keygen -t rsa -N "${site_name}" -f /home/${site_name}/.ssh/id_rsa
+					chmod 0600 /home/${site_name}/.ssh/id_rsa
+					ssh-keygen -t dsa -N "${site_name}" -f /home/${site_name}/.ssh/id_dsa
+					chmod 0600 /home/${site_name}/.ssh/id_dsa
+					echo  "<?php phpinfo();" > /home/${site_name}/httpdocs/web/index.php
+					if [ $LOCK -eq 1 ]; then
+						php -r "echo 'admin:' . crypt('${authpassword}', 'salt') . ': Web auth for ${site_name}';" > /home/${site_name}/authfile
+					fi					
+					chown ${site_name}:www-data -R /home/${site_name}					
+				fi
 
         if [ $APACHE -eq 1 ]; then
 
@@ -357,14 +358,14 @@ do
             APACHE=1
             shift
         ;;
-        -s | --awstats)
+        -w | --awstats)
             AWSTATS=1
             shift
         ;;
         -l | --lock)
             LOCK=1
             shift
-        ;;
+        ;;				
         -5 | --php5)
             PHP=5
             shift
@@ -372,7 +373,7 @@ do
         -7 | --php7)
             PHP=7
             shift
-        ;;
+        ;;			
         -h | --help)
                 usage
                 exit
