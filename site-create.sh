@@ -356,7 +356,7 @@ usage: $0 options
 This script create settings files for nginx, php-fpm, apache2.
 
 OPTIONS:
-   -n | --host      Host name (Example: --host=myhost.com)
+   -n | --host      Host name without www (Example: --host=myhost.com)
    -i | --ip        IP address, default usage 80 (Example: --ip=127.0.0.1:8080)
    -r | --redirect  WWW redirect add (Example: --redirect=www-site or --redirect=site-www or disable redirect --redirect=off)
    -a | --apache    Usage apache back-end
