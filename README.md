@@ -20,33 +20,35 @@ EXAMPLES:
 ## Для подключения PHP 7.0
 
 ``` sh
-$ bash site-create.sh --host="yii2-eav.ztc" -7
+$ bash site-create.sh --host="yii2-eav.ztc" --redirect=www-site -7
 ```
 
 ### Вывод
 
 ```
 --------------------------------------------------------
-User: yii2-eav.ztc
-Login: yii2-eav.ztc
-Password: OTE5MGRhMjMwYTJl
-Path: /home/yii2-eav.ztc/
-SSH Private file: /home/yii2-eav.ztc/.ssh/id_rsa
-SSH Public file: /home/yii2-eav.ztc/.ssh/id_rsa.pub
+User: mts.ztc
+Login: mts.ztc
+Password: ODE4N2UzMTNhMDJj
+Path: /home/mts.ztc/
+SSH Private file: /home/mts.ztc/.ssh/id_rsa
+SSH Public file: /home/mts.ztc/.ssh/id_rsa.pub
 Servers:
-Site name: yii2-eav.ztc (192.168.1.131:80)
-Site root: /home/yii2-eav.ztc/httpdocs/web
-Site logs path: /home/yii2-eav.ztc/logs
+Site name: mts.ztc (192.168.1.131:80)
+Use redirect from mts.ztc to mts.ztc
+Site root: /home/mts.ztc/httpdocs/web
+Site logs path: /home/mts.ztc/logs
 Back-end server: PHP-FPM
-NGINX: /etc/nginx/conf.d/yii2-eav.ztc.conf
-PHP-FPM: /etc/php/7.0/fpm/pool.d/yii2-eav.ztc.conf
+NGINX: /etc/nginx/conf.d/mts.ztc.conf
+PHP-FPM: /etc/php/7.0/fpm/pool.d/mts.ztc.conf
+unixsock: /var/run/php-fpm-7-mts.ztc.sock
 --------------------------------------------------------
 ```
 
 ### Для подключения PHP 5.x
 
 ``` sh
-$ bash site-create.sh --host="yii2-eav.ztc" -5
+$ bash site-create.sh --host="yii2-eav.ztc" --redirect=www-site -5
 ```
 
 ### Вывод
