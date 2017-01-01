@@ -20,7 +20,7 @@ EXAMPLES:
 ## Для подключения PHP 7.0
 
 ``` sh
-$ bash site-create.sh --host="yii2-eav.ztc" --redirect=www-site -7
+$ bash site-create.sh --host=yii2-eav.ztc --redirect=www-site -7
 ```
 
 ### Вывод
@@ -48,7 +48,7 @@ unixsock: /var/run/php-fpm-7-mts.ztc.sock
 ### Для подключения PHP 5.x
 
 ``` sh
-$ bash site-create.sh --host="yii2-eav.ztc" --redirect=www-site -5
+$ bash site-create.sh --host=yii2-eav.ztc --redirect=www-site -5
 ```
 
 ### Вывод
