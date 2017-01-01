@@ -53,17 +53,20 @@ $ bash site-create.sh --host="yii2-eav.ztc" -5
 
 ```
 --------------------------------------------------------
-User: yii2-eav.ztc
-Login: yii2-eav.ztc
-Password: OTIxYTU4NzAyZmZl
-Path: /home/yii2-eav.ztc/
-SSH Private file: /home/yii2-eav.ztc/.ssh/id_rsa
-SSH Public file: /home/yii2-eav.ztc/.ssh/id_rsa.pub
+User: mts.ztc
+Login: mts.ztc
+Password: MDIxZDcxMTk4YjY3
+Path: /home/mts.ztc/
+SSH Private file: /home/mts.ztc/.ssh/id_rsa
+SSH Public file: /home/mts.ztc/.ssh/id_rsa.pub
 Servers:
-Site root: /home/yii2-eav.ztc/httpdocs/web
-Site logs path: /home/yii2-eav.ztc/logs
+Site name: mts.ztc (192.168.1.131:80)
+Use redirect from mts.ztc to mts.ztc
+Site root: /home/mts.ztc/httpdocs/web
+Site logs path: /home/mts.ztc/logs
 Back-end server: PHP-FPM
-NGINX: /etc/nginx/conf.d/yii2-eav.ztc.conf
-PHP-FPM: /etc/php5/fpm/pool.d/yii2-eav.ztc.conf
+NGINX: /etc/nginx/conf.d/mts.ztc.conf
+PHP-FPM: /etc/php5/fpm/pool.d/mts.ztc.conf
+unixsock: /var/run/php-fpm-5-mts.ztc.sock
 --------------------------------------------------------
 ```
