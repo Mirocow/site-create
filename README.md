@@ -1,7 +1,7 @@
 # site-create
 RU: Скрипт для создания сайтов
 ENG: This script create settings files for nginx, php-fpm, apache2.
-
+```
 OPTIONS:
    -n | --host      Host name (Example: --host=myhost.com)
    -i | --ip        IP address, default usage 80 (Example: --ip=127.0.0.1:8080)
@@ -15,6 +15,7 @@ OPTIONS:
 
 EXAMPLES:
    bash site-create.sh --host="yii2-eav.ztc" --ip="192.168.1.131:8082
+```   
 
 ## Для подключения PHP 7.0
 
