@@ -1,5 +1,20 @@
 # site-create
-Скрипт для создания сайтов
+RU: Скрипт для создания сайтов
+ENG: This script create settings files for nginx, php-fpm, apache2.
+
+OPTIONS:
+   -n | --host      Host name (Example: --host=myhost.com)
+   -i | --ip        IP address, default usage 80 (Example: --ip=127.0.0.1:8080)
+   -r | --redirect  WWW redirect add (Example: --redirect=www-site or --redirect=site-www or disable redirect --redirect=off)
+   -a | --apache    Usage apache back-end
+   -s | --awstats   Usage awstats
+   -5 | --php5      Usage PHP 5.x
+   -7 | --php7      Usage PHP 7.x
+   -l | --lock      Usage Nginx HTTP Auth basic
+   -h | --help      Usage
+
+EXAMPLES:
+   bash site-create.sh --host="yii2-eav.ztc" --ip="192.168.1.131:8082
 
 ## Для подключения PHP 7.0
 
