@@ -18,27 +18,27 @@ function create_site()
         password=$(date +%s | sha256sum | base64 | head -c 16 ; echo)
 
 				if [ -d /home/${site_name} ]; then
-					echo ${site_name}:${password} | chpasswd
-          usermod  -s /bin/bash ${site_name}					
+						echo ${site_name}:${password} | chpasswd
+						usermod  -s /bin/bash ${site_name}
 				else
-					mkdir /home/${site_name}
-					mkdir /home/${site_name}/logs
-					mkdir /home/${site_name}/httpdocs
-					mkdir /home/${site_name}/httpdocs/web
-					useradd -d /home/${site_name} -s /bin/bash ${site_name}
-					usermod -G www-data ${site_name}
-					echo ${site_name}:${password} | chpasswd
-					mkdir /home/${site_name}/.ssh
-					chmod 0700 /home/${site_name}/.ssh
-					ssh-keygen -t rsa -N "${site_name}" -f /home/${site_name}/.ssh/id_rsa
-					chmod 0600 /home/${site_name}/.ssh/id_rsa
-					ssh-keygen -t dsa -N "${site_name}" -f /home/${site_name}/.ssh/id_dsa
-					chmod 0600 /home/${site_name}/.ssh/id_dsa
-					echo  "<?php phpinfo();" > /home/${site_name}/httpdocs/web/index.php
-					if [ $LOCK -eq 1 ]; then
-						php -r "echo 'admin:' . crypt('${authpassword}', 'salt') . ': Web auth for ${site_name}';" > /home/${site_name}/authfile
-					fi					
-					chown ${site_name}:www-data -R /home/${site_name}					
+						mkdir /home/${site_name}
+						mkdir /home/${site_name}/logs
+						mkdir /home/${site_name}/httpdocs
+						mkdir /home/${site_name}/httpdocs/web
+						useradd -d /home/${site_name} -s /bin/bash ${site_name}
+						usermod -G www-data ${site_name}
+						echo ${site_name}:${password} | chpasswd
+						mkdir /home/${site_name}/.ssh
+						chmod 0700 /home/${site_name}/.ssh
+						ssh-keygen -t rsa -N "${site_name}" -f /home/${site_name}/.ssh/id_rsa
+						chmod 0600 /home/${site_name}/.ssh/id_rsa
+						ssh-keygen -t dsa -N "${site_name}" -f /home/${site_name}/.ssh/id_dsa
+						chmod 0600 /home/${site_name}/.ssh/id_dsa
+						echo  "<?php phpinfo();" > /home/${site_name}/httpdocs/web/index.php
+						if [ $LOCK -eq 1 ]; then
+																						php -r "echo 'admin:' . crypt('${authpassword}', 'salt') . ': Web auth for ${site_name}';" > /home/${site_name}/authfile
+						fi
+						chown ${site_name}:www-data -R /home/${site_name}
 				fi
 
         if [ $APACHE -eq 1 ]; then
@@ -130,15 +130,15 @@ else
 fi
 
 if [ $LOCK -eq 1 ]; then
-        lock="
+    lock="
 auth_basic \"Website development\";
 auth_basic_user_file /home/${site_name}/authfile;
 "
 else
-lock=''
+    lock=''
 fi
 
-        main="
+    main="
                                 # With PHP-FPM
                                 location / {
                                                 index index.php;
@@ -197,20 +197,44 @@ else
         awstats=''
 fi
 
-echo "
-${awstats}
-
-# Rerirect www.${site_name}
+if [ $REDIRECT = 'site-www' ]; then
+        redirect="
+# Rerirect ${site_name}
 server {
                                 listen ${site_addr};
                                 server_name ${site_name};
                                 return 301 http://www.${site_name}\$request_uri;
 }
-
-# Site www.${site_name}
+"
+        server_name="www.${site_name}"
+fi				
+				
+if [ $REDIRECT = 'www-site' ]; then
+        redirect="
+# Rerirect www.${site_name}
 server {
                                 listen ${site_addr};
                                 server_name www.${site_name};
+                                return 301 http://${site_name}\$request_uri;
+}
+"
+        server_name="${site_name}"
+fi
+				
+if [ $REDIRECT = 'off' ]; then
+        redirect=''
+        server_name="${site_name}"
+fi
+
+echo "
+${awstats}
+
+${redirect}
+
+# Site ${server_name}
+server {
+                                listen ${site_addr};
+                                server_name ${server_name};
                                 root /home/${site_name}/httpdocs/web;
                                 index index.php;
                                 access_log /home/${site_name}/logs/access.log;
@@ -280,8 +304,20 @@ server {
         echo "SSH Public file: /home/${site_name}/.ssh/id_rsa.pub"
         echo "Servers:"
         echo "Site name: ${site_name} (${IP})"
+				
+				if [ $REDIRECT = 'site-www' ]; then
+        echo "Use redirect from ${site_name} to ${server_name}"
+				fi				
+				if [ $REDIRECT = 'www-site' ]; then
+        echo "Use redirect from ${site_name} to ${server_name}"
+				fi
+				if [ $REDIRECT = 'off' ]; then
+        echo "Redirect disabled. use only ${server_name}"
+				fi
+ 
         echo "Site root: /home/${site_name}/httpdocs/web"
         echo "Site logs path: /home/${site_name}/logs"
+
         if [ $APACHE -eq 1 ]; then
           echo "Back-end server: Apache 2"
           echo "NGINX: /etc/nginx/conf.d/${site_name}.conf"
@@ -292,18 +328,21 @@ server {
           if [ $PHP -eq 5 ]; then
             echo "PHP-FPM: /etc/php5/fpm/pool.d/${site_name}.conf"
           else
-            echo "PHP-FPM: /etc/php/7.0/fpm/pool.d/${site_name}.conf"						
+            echo "PHP-FPM: /etc/php/7.0/fpm/pool.d/${site_name}.conf"
           fi
-					echo "unixsock: /var/run/php-fpm-${PHP}-${site_name}.sock"
+          echo "unixsock: /var/run/php-fpm-${PHP}-${site_name}.sock"
         fi
+
         if [ $LOCK -eq 1 ]; then
           echo "Web auth: admin ${authpassword}"
         fi
+
         if [ $AWSTATS -eq 1 ]; then
           echo "Statistic:"
           echo "awstats.${site_name}"
           echo "Add crontab task: */20 * * * * /usr/lib/cgi-bin/awstats.pl -config=${site_name} -update > /dev/null"
         fi
+
         echo "--------------------------------------------------------"
         echo ""
 
@@ -319,10 +358,12 @@ This script create settings files for nginx, php-fpm, apache2.
 OPTIONS:
    -n | --host      Host name (Example: --host=myhost.com)
    -i | --ip        IP address, default usage 80 (Example: --ip=127.0.0.1:8080)
+   -r | --redirect  WWW redirect add (Example: --redirect=www-site or --redirect=site-www or disable redirect --redirect=off)
    -a | --apache    Usage apache back-end
    -s | --awstats   Usage awstats
    -5 | --php5      Usage PHP 5.x
    -7 | --php7      Usage PHP 7.x
+   -l | --lock      Usage Nginx HTTP Auth basic
    -h | --help      Usage
 
 EXAMPLES:
@@ -331,11 +372,8 @@ EXAMPLES:
 EOF
 }
 
-if [ $# = 0 ]; then
-    usage
-    exit
-fi
-
+HTTPS=0
+REDIRECT='site-www'
 LOCK=0
 HOST=''
 APACHE=0
@@ -354,18 +392,22 @@ do
             IP=( "${i#*=}" )
             shift
         ;;
+        -r=* | --redirect=*)
+            REDIRECT=( "${i#*=}" )
+            shift
+        ;;
         -a | --apache)
             APACHE=1
             shift
         ;;
-        -w | --awstats)
-            AWSTATS=1
+        -s | --https)
+            HTTPS=1
             shift
         ;;
         -l | --lock)
             LOCK=1
             shift
-        ;;				
+        ;;
         -5 | --php5)
             PHP=5
             shift
@@ -373,7 +415,11 @@ do
         -7 | --php7)
             PHP=7
             shift
-        ;;			
+        ;;
+        -w | --awstats)
+            AWSTATS=1
+            shift
+        ;;
         -h | --help)
                 usage
                 exit
