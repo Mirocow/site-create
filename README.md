@@ -1,5 +1,5 @@
 # site-create
-RU: Скрипт для создания сайтов
+RU: Скрипт для создания сайтов \\
 ENG: This script create settings files for nginx, php-fpm, apache2.
 ```
 OPTIONS:
