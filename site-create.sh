@@ -11,15 +11,22 @@ function create_site()
 {
 
         site_name=$HOST
+				site_alias=$ALIAS
         site_addr=$IP
-
-        authpassword=$(date +%s | sha256sum | base64 | head -c 6 ; echo)
-        sleep 1
         password=$(date +%s | sha256sum | base64 | head -c 16 ; echo)
 
+        if [ -z $site_alias ]; then
+						site_alias=$site_name
+				fi
+
 				if [ -d /home/${site_name} ]; then
-						echo ${site_name}:${password} | chpasswd
-						usermod  -s /bin/bash ${site_name}
+						if [ $CHANGE_PASSWORD -eq 1 ]; then
+								echo ${site_name}:${password} | chpasswd
+								usermod  -s /bin/bash ${site_name}
+						else
+								password='[without changes]'
+								echo "User's password is not updated"
+						fi						
 				else
 						mkdir /home/${site_name}
 						mkdir /home/${site_name}/logs
@@ -36,7 +43,8 @@ function create_site()
 						chmod 0600 /home/${site_name}/.ssh/id_dsa
 						echo  "<?php phpinfo();" > /home/${site_name}/httpdocs/web/index.php
 						if [ $LOCK -eq 1 ]; then
-																						php -r "echo 'admin:' . crypt('${authpassword}', 'salt') . ': Web auth for ${site_name}';" > /home/${site_name}/authfile
+								authpassword=$(date +%s | sha256sum | base64 | head -c 6 ; echo)
+								php -r "echo 'admin:' . crypt('${authpassword}', 'salt') . ': Web auth for ${site_name}';" > /home/${site_name}/authfile
 						fi
 						chown ${site_name}:www-data -R /home/${site_name}
 				fi
@@ -234,7 +242,7 @@ ${redirect}
 # Site ${server_name}
 server {
                                 listen ${site_addr};
-                                server_name ${server_name};
+                                server_name ${server_name} ${site_alias};
                                 root /home/${site_name}/httpdocs/web;
                                 index index.php;
                                 access_log /home/${site_name}/logs/access.log;
@@ -304,6 +312,7 @@ server {
         echo "SSH Public file: /home/${site_name}/.ssh/id_rsa.pub"
         echo "Servers:"
         echo "Site name: ${site_name} (${IP})"
+				echo "Site alias: ${site_alias}"
 				
 				if [ $REDIRECT = 'site-www' ]; then
         echo "Use redirect from ${site_name} to ${server_name}"
@@ -353,29 +362,34 @@ usage()
 cat << EOF
 usage: $0 options
 
-This script create settings files for nginx, php-fpm, apache2.
+This script create settings files for nginx, php-fpm (ver: 5, 7), apache2, awstats.
 
 OPTIONS:
-   -n | --host      Host name without www (Example: --host=myhost.com)
-   -i | --ip        IP address, default usage 80 (Example: --ip=127.0.0.1:8080)
-   -r | --redirect  WWW redirect add (Example: --redirect=www-site or --redirect=site-www or disable redirect --redirect=off)
-   -a | --apache    Usage apache back-end
-   -s | --awstats   Usage awstats
-   -5 | --php5      Usage PHP 5.x
-   -7 | --php7      Usage PHP 7.x
-   -l | --lock      Usage Nginx HTTP Auth basic
-   -h | --help      Usage
+   --host=                  Host name without www (Example: --host=myhost.com)
+   --ip=                    IP address, default usage 80 (Example: --ip=127.0.0.1:8080)
+   --redirect=              WWW redirect add (Example: --redirect=www-site or --redirect=site-www or disable redirect --redirect=off)
+	 --alias=                 Set Nginx alias (Examle: --alias="alias1 alias2 etc")
+   --apache                 Usage apache back-end
+   --awstats                Usage awstats
+	 --dont-change-password   Usage for change user password (Default: 1. Usage only for update)
+   -5 | --php5              Usage PHP 5.x
+   -7 | --php7              Usage PHP 7.x
+   -l | --lock              Usage Nginx HTTP Auth basic	 
+   -h | --help              Usage
 
 EXAMPLES:
-   bash site-create.sh --host="yii2-eav.ztc" --ip="192.168.1.131:8082"
+   bash site-create.sh --host="mirocow.com" --ip="192.168.1.131:8082"
+	 bash site-create.sh --host="mirocow.com" --alias="c1.mirocow.com c2.mirocow.com"
 
 EOF
 }
 
+CHANGE_PASSWORD=1
 HTTPS=0
 REDIRECT='site-www'
 LOCK=0
 HOST=''
+ALIAS=''
 APACHE=0
 AWSTATS=0
 PHP=5
@@ -383,25 +397,33 @@ IP=$(trim $(hostname -I)):80
 
 for i in "$@"
 do
-    case $i in
-        -n=* | --host=*)
+    case $i in		
+        --host=*)
             HOST=( "${i#*=}" )
             shift
         ;;
-        -i=* | --ip=*)
+        --alias=*)
+            ALIAS=( "${i#*=}" )
+            shift
+        ;;				
+        --ip=*)
             IP=( "${i#*=}" )
             shift
         ;;
-        -r=* | --redirect=*)
+        --redirect=*)
             REDIRECT=( "${i#*=}" )
             shift
         ;;
-        -a | --apache)
+        --https)
+            HTTPS=1
+            shift
+        ;;
+        --apache)
             APACHE=1
             shift
         ;;
-        -s | --https)
-            HTTPS=1
+        --dont-change-password)
+            CHANGE_PASSWORD=0
             shift
         ;;
         -l | --lock)
