@@ -20,7 +20,7 @@ function create_site()
 				fi
 
 				if [ -d /home/${site_name} ]; then
-						if [ $CHANGE_PASSWORD -eq 1 ]; then
+						if [ $SET_PASSWORD -eq 1 ]; then
 								echo ${site_name}:${password} | chpasswd
 								usermod  -s /bin/bash ${site_name}
 						else
@@ -384,7 +384,7 @@ EXAMPLES:
 EOF
 }
 
-CHANGE_PASSWORD=1
+SET_PASSWORD=1
 HTTPS=0
 REDIRECT='site-www'
 LOCK=0
@@ -423,7 +423,7 @@ do
             shift
         ;;
         --dont-change-password)
-            CHANGE_PASSWORD=0
+            SET_PASSWORD=0
             shift
         ;;
         -l | --lock)
