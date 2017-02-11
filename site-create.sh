@@ -129,8 +129,14 @@ php_flag[opcache.enable] = off
 
 if [ $PHP -eq 5 ]; then
     echo "$php_config" > "/etc/php5/fpm/pool.d/${site_name}.conf"
-else
+fi
+
+if [ $PHP -eq 7 ]; then
     echo "$php_config" > "/etc/php/7.0/fpm/pool.d/${site_name}.conf"
+fi
+
+if [ $PHP -eq 71 ]; then
+    echo "$php_config" > "/etc/php/7.1/fpm/pool.d/${site_name}.conf"
 fi
 
 if [ $LOCK -eq 1 ]; then
@@ -288,10 +294,16 @@ server {
 
         if [ $PHP -eq 5 ]; then
           service php5-fpm reload
-        else
+        fi
+	
+        if [ $PHP -eq 7 ]; then	
           service php7.0-fpm reload
         fi
-
+	
+        if [ $PHP -eq 71 ]; then	
+          service php7.1-fpm reload
+        fi
+	
         if [ $APACHE -eq 1 ]; then
           service apache2 reload
         fi
@@ -333,11 +345,19 @@ server {
         else
           echo "Back-end server: PHP-FPM"
           echo "NGINX: /etc/nginx/conf.d/${site_name}.conf"
+	  
           if [ $PHP -eq 5 ]; then
             echo "PHP-FPM: /etc/php5/fpm/pool.d/${site_name}.conf"
-          else
+	  fi  
+	  
+          if [ $PHP -eq 7 ]; then
             echo "PHP-FPM: /etc/php/7.0/fpm/pool.d/${site_name}.conf"
           fi
+	  
+          if [ $PHP -eq 71 ]; then
+            echo "PHP-FPM: /etc/php/7.1/fpm/pool.d/${site_name}.conf"
+          fi	  
+	  
           echo "unixsock: /var/run/php-fpm-${PHP}-${site_name}.sock"
         fi
 
@@ -372,7 +392,8 @@ OPTIONS:
    --awstats                Usage awstats
    --dont-change-password   Usage for change user password (Default: 1. Usage only for update)
    -5 | --php5              Usage PHP 5.x
-   -7 | --php7              Usage PHP 7.x
+   -7 | --php7              Usage PHP 7.0
+   -71 | --php71            Usage PHP 7.1
    -l | --lock              Usage Nginx HTTP Auth basic	 
    -h | --help              Usage
 
@@ -437,6 +458,10 @@ do
             PHP=7
             shift
         ;;
+        -71 | --php71)
+            PHP=71
+            shift
+        ;;	
         -w | --awstats)
             AWSTATS=1
             shift
