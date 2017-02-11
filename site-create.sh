@@ -124,7 +124,14 @@ security.limit_extensions = false
 php_flag[display_errors] = on
 php_admin_value[error_log] = /home/${site_name}/logs/fpm-php-${PHP}-${site_name}.log
 php_admin_flag[log_errors] = on
-php_flag[opcache.enable] = off
+
+php_flag[opcache.enable] = $PHP_OPCACHE
+php_flag[opcache.enable_cli] = $PHP_OPCACHE
+php_flag[opcache.memory_consumption] = 128
+php_flag[opcache.interned_strings_buffer] = 8
+php_flag[opcache.max_accelerated_files] = 4000
+php_flag[opcache.revalidate_freq] = 60
+php_flag[opcache.fast_shutdown] = 1
 "
 
 if [ $PHP -eq 5 ]; then
@@ -413,6 +420,7 @@ ALIAS=''
 APACHE=0
 AWSTATS=0
 PHP=5
+PHP_OPCACHE='Off'
 IP=$(trim $(hostname -I)):80
 
 for i in "$@"
@@ -460,6 +468,10 @@ do
         ;;
         -71 | --php71)
             PHP=71
+            shift
+        ;;
+        -c | --php-opcache)
+            PHP_OPCACHE='On'
             shift
         ;;	
         -w | --awstats)
