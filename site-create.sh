@@ -125,6 +125,7 @@ php_flag[display_errors] = on
 php_admin_value[error_log] = /home/${site_name}/logs/fpm-php-${PHP}-${site_name}.log
 php_admin_flag[log_errors] = on
 
+; Documentation: http://php.net/manual/ru/opcache.configuration.php
 php_flag[opcache.enable] = $PHP_OPCACHE
 php_flag[opcache.enable_cli] = $PHP_OPCACHE
 "
