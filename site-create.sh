@@ -10,42 +10,42 @@ function trim()
 function create_site()
 {
 
-        site_name=$HOST
-        site_alias=$ALIAS
-        site_addr=$IP
-        password=$(date +%s | sha256sum | base64 | head -c 16 ; echo)
+		site_name=$HOST
+		site_alias=$ALIAS
+		site_addr=$IP
+		password=$(date +%s | sha256sum | base64 | head -c 16 ; echo)
 
-        if [ -d /home/${site_name} ]; then
-		if [ $SET_PASSWORD -eq 1 ]; then
-		echo ${site_name}:${password} | chpasswd
-		usermod  -s /bin/bash ${site_name}
+    if [ -d /home/${site_name} ]; then
+				if [ $SET_PASSWORD -eq 1 ]; then
+						echo ${site_name}:${password} | chpasswd
+						usermod  -s /bin/bash ${site_name}
+				else
+						password='[without changes]'
+						echo "User's password is not updated"
+				fi						
 		else
-		password='[without changes]'
-		echo "User's password is not updated"
-		fi						
-        else
-		mkdir /home/${site_name}
-		mkdir /home/${site_name}/logs
-		mkdir /home/${site_name}/httpdocs
-		mkdir /home/${site_name}/httpdocs/web
-		useradd -d /home/${site_name} -s /bin/bash ${site_name}
-		usermod -G www-data ${site_name}
-		echo ${site_name}:${password} | chpasswd
-		mkdir /home/${site_name}/.ssh
-		chmod 0700 /home/${site_name}/.ssh
-		ssh-keygen -b 4096 -t rsa -N "${site_name}" -f /home/${site_name}/.ssh/id_rsa
-		chmod 0600 /home/${site_name}/.ssh/id_rsa
-		ssh-keygen -b 4096 -t dsa -N "${site_name}" -f /home/${site_name}/.ssh/id_dsa
-		chmod 0600 /home/${site_name}/.ssh/id_dsa
-		echo  "<?php phpinfo();" > /home/${site_name}/httpdocs/web/index.php
-		if [ $LOCK -eq 1 ]; then
-		authpassword=$(date +%s | sha256sum | base64 | head -c 6 ; echo)
-		php -r "echo 'admin:' . crypt('${authpassword}', 'salt') . ': Web auth for ${site_name}';" > /home/${site_name}/authfile
+				mkdir /home/${site_name}
+				mkdir /home/${site_name}/logs
+				mkdir /home/${site_name}/httpdocs
+				mkdir /home/${site_name}/httpdocs/web
+				useradd -d /home/${site_name} -s /bin/bash ${site_name}
+				usermod -G www-data ${site_name}
+				echo ${site_name}:${password} | chpasswd
+				mkdir /home/${site_name}/.ssh
+				chmod 0700 /home/${site_name}/.ssh
+				ssh-keygen -b 4096 -t rsa -N "${site_name}" -f /home/${site_name}/.ssh/id_rsa
+				chmod 0600 /home/${site_name}/.ssh/id_rsa
+				ssh-keygen -b 4096 -t dsa -N "${site_name}" -f /home/${site_name}/.ssh/id_dsa
+				chmod 0600 /home/${site_name}/.ssh/id_dsa
+				echo  "<?php phpinfo();" > /home/${site_name}/httpdocs/web/index.php
+				if [ $LOCK -eq 1 ]; then
+						authpassword=$(date +%s | sha256sum | base64 | head -c 6 ; echo)
+						php -r "echo 'admin:' . crypt('${authpassword}', 'salt') . ': Web auth for ${site_name}';" > /home/${site_name}/authfile
+				fi
+				chown ${site_name}:www-data -R /home/${site_name}
 		fi
-		chown ${site_name}:www-data -R /home/${site_name}
-        fi
 
-        if [ $APACHE -eq 1 ]; then
+		if [ $APACHE -eq 1 ]; then
 
         echo "
 <VirtualHost 127.0.0.1:8080>
@@ -100,7 +100,7 @@ main="
                                 }
 "
 
-        else
+		else
 
         php_config=";; php-fpm config for ${site_name}
 [${site_name}]
@@ -130,17 +130,7 @@ php_flag[opcache.enable] = $PHP_OPCACHE
 php_flag[opcache.enable_cli] = $PHP_OPCACHE
 "
 
-if [ $PHP -eq 5 ]; then
-    echo "$php_config" > "/etc/php5/fpm/pool.d/${site_name}.conf"
-fi
-
-if [ $PHP -eq 7 ]; then
-    echo "$php_config" > "/etc/php/7.0/fpm/pool.d/${site_name}.conf"
-fi
-
-if [ $PHP -eq 71 ]; then
-    echo "$php_config" > "/etc/php/7.1/fpm/pool.d/${site_name}.conf"
-fi
+echo "$php_config" > "/etc/php/${PHP}/fpm/pool.d/${site_name}.conf"
 
 if [ $LOCK -eq 1 ]; then
     lock="
@@ -172,11 +162,11 @@ fi
                                                 fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
                                 }
 "
-        fi
+		fi
 
 if [ $AWSTATS -eq 1 ]; then
         awstats="# Awstats
-server {
+                                server {
                                 listen ${site_addr};
                                 server_name  awstats.${site_name};
 
@@ -204,7 +194,7 @@ server {
                                                 include /etc/nginx/fastcgi_params;
                                                 fastcgi_param  SCRIPT_FILENAME  /usr/lib\$fastcgi_script_name;
                                 }
-}
+                                }
 "
 else
         awstats=''
@@ -212,12 +202,12 @@ fi
 
 if [ $REDIRECT = 'site-www' ]; then
         redirect="
-# Rerirect ${site_name}
-server {
-                                listen ${site_addr};
-                                server_name ${site_name};
-                                return 301 http://www.${site_name}\$request_uri;
-}
+                                # Rerirect ${site_name}
+                                server {
+                                                listen ${site_addr};
+                                                server_name ${site_name};
+                                                return 301 http://www.${site_name}\$request_uri;
+                                }
 "
         server_name="www.${site_name}"
 fi				
@@ -295,17 +285,7 @@ server {
 }
 " > /etc/nginx/conf.d/${site_name}.conf
 
-        if [ $PHP -eq 5 ]; then
-          service php5-fpm reload
-        fi
-	
-        if [ $PHP -eq 7 ]; then	
-          service php7.0-fpm reload
-        fi
-	
-        if [ $PHP -eq 71 ]; then	
-          service php7.1-fpm reload
-        fi
+				service php${PHP}-fpm reload
 	
         if [ $APACHE -eq 1 ]; then
           service apache2 reload
@@ -323,11 +303,11 @@ server {
         echo "SSH Public file: /home/${site_name}/.ssh/id_rsa.pub"
         echo "Servers:"
         echo "Site name: ${site_name} (${IP})"
-	
-	if [ ! -z $site_alias ]; then
+
+        if [ ! -z $site_alias ]; then
           echo "Site alias: ${site_alias}"
-	fi
-				
+        fi
+
         if [ $REDIRECT = 'site-www' ]; then
           echo "Use redirect from ${site_name} to ${server_name}"
         fi				
@@ -337,7 +317,7 @@ server {
         if [ $REDIRECT = 'off' ]; then
           echo "Redirect disabled. use only ${server_name}"
         fi
- 
+
         echo "Site root: /home/${site_name}/httpdocs/web"
         echo "Site logs path: /home/${site_name}/logs"
 
@@ -348,19 +328,7 @@ server {
         else
           echo "Back-end server: PHP-FPM"
           echo "NGINX: /etc/nginx/conf.d/${site_name}.conf"
-	  
-          if [ $PHP -eq 5 ]; then
-            echo "PHP-FPM: /etc/php5/fpm/pool.d/${site_name}.conf"
-	  fi  
-	  
-          if [ $PHP -eq 7 ]; then
-            echo "PHP-FPM: /etc/php/7.0/fpm/pool.d/${site_name}.conf"
-          fi
-	  
-          if [ $PHP -eq 71 ]; then
-            echo "PHP-FPM: /etc/php/7.1/fpm/pool.d/${site_name}.conf"
-          fi	  
-	  
+          echo "PHP-FPM: /etc/php/${PHP}/fpm/pool.d/${site_name}.conf"  
           echo "unixsock: /var/run/php-fpm-${PHP}-${site_name}.sock"
         fi
 
@@ -415,7 +383,7 @@ HOST=''
 ALIAS=''
 APACHE=0
 AWSTATS=0
-PHP=5
+PHP=5.6
 PHP_OPCACHE='Off'
 IP=$(trim $(hostname -I)):80
 
@@ -455,15 +423,15 @@ do
             shift
         ;;
         -5 | --php5)
-            PHP=5
+            PHP=5.6
             shift
         ;;
         -7 | --php7)
-            PHP=7
+            PHP=7.0
             shift
         ;;
         -71 | --php71)
-            PHP=71
+            PHP=7.1
             shift
         ;;
         -c | --php-opcache)
