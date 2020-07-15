@@ -365,12 +365,15 @@ OPTIONS:
    -5 | --php5              Usage PHP 5.x
    -7 | --php7              Usage PHP 7.0
    -71 | --php71            Usage PHP 7.1
+   -72 | --php72            Usage PHP 7.2
+   -73 | --php73            Usage PHP 7.3
+   -74 | --php74            Usage PHP 7.4         
    -l | --lock              Usage Nginx HTTP Auth basic	 
    -h | --help              Usage
 
 EXAMPLES:
    bash site-create.sh --host="mirocow.com" --ip="192.168.1.131:8082"
-   bash site-create.sh --host="mirocow.com" --alias="c1.mirocow.com c2.mirocow.com"
+   bash site-create.sh --host="mirocow.com" --alias="c1.mirocow.com c2.mirocow.com" --php73
 
 EOF
 }
@@ -383,7 +386,7 @@ HOST=''
 ALIAS=''
 APACHE=0
 AWSTATS=0
-PHP=5.6
+PHP=7.2
 PHP_OPCACHE='Off'
 IP=$(trim $(hostname -I)):80
 
@@ -434,6 +437,18 @@ do
             PHP=7.1
             shift
         ;;
+        -72 | --php72)
+            PHP=7.2
+            shift
+        ;;
+        -73 | --php73)
+            PHP=7.3
+            shift
+        ;;
+        -74 | --php74)
+            PHP=7.4
+            shift
+        ;;        
         -c | --php-opcache)
             PHP_OPCACHE='On'
             shift
